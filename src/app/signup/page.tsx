@@ -1,4 +1,3 @@
-
 import { SignupForm } from '@/components/auth/signup-form';
 import { Logo } from '@/components/icons';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
