@@ -1,11 +1,10 @@
-
 'use client';
 
 import { useState, useEffect } from "react";
 import { Pet, Consultation, Vaccination, Medication, Grooming } from "@/lib/placeholder-data";
 import { db, auth } from "@/lib/firebase";
 import { collection, onSnapshot, query, where } from "firebase/firestore";
-import { onAuthStateChanged } from "firebase/auth";
+import { onAuthStateChanged, User } from "firebase/auth";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Bell, Syringe, Pill, Stethoscope, Scissors, Dog, Cat, CalendarPlus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -28,7 +27,7 @@ type Reminder = {
 export default function RemindersPage() {
     const [pets, setPets] = useState<Pet[]>([]);
     const [loading, setLoading] = useState(true);
-    const [user, setUser] = useState(auth.currentUser);
+    const [user, setUser] = useState<User | null>(null);
 
     useEffect(() => {
         const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {

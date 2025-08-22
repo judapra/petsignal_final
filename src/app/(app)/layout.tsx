@@ -1,4 +1,3 @@
-
 'use client';
 
 import type { ReactNode } from "react";
@@ -28,16 +27,18 @@ import {
   Bell,
 } from "lucide-react";
 import { Logo } from "@/components/icons";
-import { onAuthStateChangedHelper, signOut, getCurrentUser } from "@/lib/auth";
+import { onAuthStateChangedHelper, signOut } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { User } from "firebase/auth";
 
 export default function AppLayout({ children }: { children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const { toast } = useToast();
-  const [user, setUser] = useState(getCurrentUser());
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const navLinks = [
     { href: "/dashboard", icon: Home, label: "Painel" },
@@ -51,14 +52,14 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChangedHelper((firebaseUser) => {
+      setUser(firebaseUser);
+      setLoading(false);
       if (!firebaseUser) {
         router.push('/login');
-      } else {
-        setUser(firebaseUser);
       }
     });
-    
-    if ('serviceWorker' in navigator) {
+
+    if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('/sw.js').then(registration => {
           console.log('Service Worker registered: ', registration);
@@ -70,6 +71,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
     return () => unsubscribe();
   }, [router]);
+
 
   const handleSignOut = async () => {
     try {
@@ -98,77 +100,85 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       ))}
     </nav>
   );
+  
+  if (loading) {
+    return (
+        <div className="flex h-screen w-full items-center justify-center bg-background">
+            <Logo />
+        </div>
+    )
+  }
 
   return (
     <div className="grid min-h-screen w-full lg:grid-cols-[280px_1fr]">
-      <div className="hidden border-r bg-card lg:block">
+        <div className="hidden border-r bg-card lg:block">
         <div className="flex h-full max-h-screen flex-col gap-2">
-          <div className="flex h-[60px] items-center border-b px-6">
+            <div className="flex h-[60px] items-center border-b px-6">
             <Link
-              href="/dashboard"
-              className="flex items-center gap-2 font-semibold"
+                href="/dashboard"
+                className="flex items-center gap-2 font-semibold"
             >
-              <Logo />
+                <Logo />
             </Link>
-          </div>
-          <div className="flex-1 overflow-auto py-2">
+            </div>
+            <div className="flex-1 overflow-auto py-2">
             <NavContent />
-          </div>
+            </div>
         </div>
-      </div>
-      <div className="flex flex-col">
+        </div>
+        <div className="flex flex-col">
         <header className="flex h-14 items-center gap-4 border-b bg-card px-6">
-           <Sheet>
+            <Sheet>
             <SheetTrigger asChild>
-              <Button size="icon" variant="outline" className="lg:hidden">
+                <Button size="icon" variant="outline" className="lg:hidden">
                 <PanelLeft className="h-5 w-5" />
                 <span className="sr-only">Abrir menu</span>
-              </Button>
+                </Button>
             </SheetTrigger>
             <SheetContent side="left" className="sm:max-w-xs">
-               <div className="flex h-[60px] items-center border-b px-6 mb-4">
-                  <Link href="/dashboard" className="flex items-center gap-2 font-semibold">
+                <div className="flex h-[60px] items-center border-b px-6 mb-4">
+                    <Link href="/dashboard" className="flex items-center gap-2 font-semibold">
                     <Logo />
-                  </Link>
-              </div>
-              <NavContent />
+                    </Link>
+                </div>
+                <NavContent />
             </SheetContent>
-          </Sheet>
+            </Sheet>
 
-          <div className="w-full flex-1">
+            <div className="w-full flex-1">
             {/* Can add a search bar here if needed */}
-          </div>
-          <DropdownMenu>
+            </div>
+            <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button className="rounded-full" variant="ghost" size="icon">
+                <Button className="rounded-full" variant="ghost" size="icon">
                 <Avatar>
-                  <AvatarImage src={user?.photoURL || "https://placehold.co/100x100.png"} />
-                  <AvatarFallback>{user?.email?.charAt(0).toUpperCase() || 'U'}</AvatarFallback>
+                    <AvatarImage src={user?.photoURL || "https://placehold.co/100x100.png"} />
+                    <AvatarFallback>{user?.email?.charAt(0).toUpperCase() || 'U'}</AvatarFallback>
                 </Avatar>
                 <span className="sr-only">Toggle user menu</span>
-              </Button>
+                </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
+                <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
                 <Link href="/settings">
                     <Settings className="mr-2 h-4 w-4" />
                     <span>Configurações</span>
                 </Link>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleSignOut}>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleSignOut}>
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>Sair</span>
-              </DropdownMenuItem>
+                </DropdownMenuItem>
             </DropdownMenuContent>
-          </DropdownMenu>
+            </DropdownMenu>
         </header>
         <main className="flex-1 overflow-auto bg-background p-4 sm:p-6">
-          {children}
+            {children}
         </main>
-      </div>
+        </div>
     </div>
   );
 }

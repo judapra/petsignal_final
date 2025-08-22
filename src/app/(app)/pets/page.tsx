@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from "react";
@@ -11,7 +10,7 @@ import { PlusCircle, Dog, Cat } from "lucide-react";
 import { db, auth } from "@/lib/firebase";
 import { collection, onSnapshot, query, where } from "firebase/firestore";
 import { Skeleton } from "@/components/ui/skeleton";
-import { onAuthStateChanged } from "firebase/auth";
+import { onAuthStateChanged, User } from "firebase/auth";
 import { Dialog, DialogTrigger, DialogContent } from "@/components/ui/dialog";
 import { AddPetForm } from "@/components/pets/add-pet-form";
 
@@ -19,7 +18,7 @@ export default function PetsPage() {
   const [pets, setPets] = useState<Pet[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAddPetDialogOpen, setIsAddPetDialogOpen] = useState(false);
-  const [user, setUser] = useState(auth.currentUser);
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {

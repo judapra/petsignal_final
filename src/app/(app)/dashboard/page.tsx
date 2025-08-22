@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from "react";
@@ -13,7 +12,7 @@ import { AddPetForm } from "@/components/pets/add-pet-form";
 import { db, auth } from "@/lib/firebase";
 import { collection, onSnapshot, query, where } from "firebase/firestore";
 import { Skeleton } from "@/components/ui/skeleton";
-import { onAuthStateChanged } from "firebase/auth";
+import { onAuthStateChanged, User } from "firebase/auth";
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Legend } from "recharts";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartConfig } from "@/components/ui/chart";
 
@@ -34,11 +33,14 @@ export default function DashboardPage() {
   const [pets, setPets] = useState<Pet[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAddPetDialogOpen, setIsAddPetDialogOpen] = useState(false);
-  const [user, setUser] = useState(auth.currentUser);
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
+      if (!currentUser) {
+        setLoading(false);
+      }
     });
 
     return () => unsubscribeAuth();
@@ -77,7 +79,9 @@ export default function DashboardPage() {
   .filter(event => {
     if (!event.date) return false;
     const eventDate = new Date(event.date);
-    return eventDate >= new Date();
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return eventDate >= today;
   })
   .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
   .slice(0, 5) as UpcomingEvent[];
@@ -115,7 +119,7 @@ export default function DashboardPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold font-headline">Dashboard</h1>
-            <p className="text-muted-foreground">Bem-vindo ao seu PetLife Manager.</p>
+            <p className="text-muted-foreground">Bem-vindo(a) ao seu PetSignal.</p>
           </div>
           <DialogTrigger asChild>
             <Button>
@@ -127,46 +131,54 @@ export default function DashboardPage() {
 
         {/* Stat Cards */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Meus Pets</CardTitle>
-              <Heart className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{pets.length}</div>
-              <p className="text-xs text-muted-foreground">Gerencie seus pets</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Vacinas</CardTitle>
-              <Syringe className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{allVaccinations.length}</div>
-              <p className="text-xs text-muted-foreground">Controle de vacinas</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Medicamentos</CardTitle>
-              <Pill className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{allMedications.length}</div>
-              <p className="text-xs text-muted-foreground">Medicações ativas</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Consultas</CardTitle>
-              <FileText className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{allConsultations.length}</div>
-              <p className="text-xs text-muted-foreground">Histórico médico</p>
-            </CardContent>
-          </Card>
+          <Link href="/pets">
+            <Card className="hover:bg-muted transition-colors">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Meus Pets</CardTitle>
+                <Heart className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{pets.length}</div>
+                <p className="text-xs text-muted-foreground">Gerencie seus pets</p>
+              </CardContent>
+            </Card>
+          </Link>
+          <Link href="/health?tab=vaccinations">
+            <Card className="hover:bg-muted transition-colors">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Vacinas</CardTitle>
+                <Syringe className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{allVaccinations.length}</div>
+                <p className="text-xs text-muted-foreground">Controle de vacinas</p>
+              </CardContent>
+            </Card>
+          </Link>
+          <Link href="/health?tab=medications">
+            <Card className="hover:bg-muted transition-colors">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Medicamentos</CardTitle>
+                <Pill className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{allMedications.length}</div>
+                <p className="text-xs text-muted-foreground">Medicações ativas</p>
+              </CardContent>
+            </Card>
+          </Link>
+          <Link href="/health?tab=consultations">
+            <Card className="hover:bg-muted transition-colors">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Consultas</CardTitle>
+                <FileText className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{allConsultations.length}</div>
+                <p className="text-xs text-muted-foreground">Histórico médico</p>
+              </CardContent>
+            </Card>
+          </Link>
         </div>
 
         {/* Main Grid */}

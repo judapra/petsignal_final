@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -18,7 +17,7 @@ import { AddMedicationForm } from '@/components/pets/add-medication-form';
 import { AddConsultationForm } from '@/components/pets/add-consultation-form';
 import { db, auth } from '@/lib/firebase';
 import { collection, onSnapshot, query, where, doc, updateDoc, getDoc } from 'firebase/firestore';
-import { onAuthStateChanged } from 'firebase/auth';
+import { onAuthStateChanged, User } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { EditVaccineForm } from '@/components/pets/edit-vaccine-form';
@@ -44,7 +43,7 @@ export default function HealthPage() {
   const [pets, setPets] = useState<Pet[]>([]);
   const [locations, setLocations] = useState<SavedLocation[]>([]);
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState(auth.currentUser);
+  const [user, setUser] = useState<User | null>(null);
   const [activeDialog, setActiveDialog] = useState<string | null>(null);
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [deletionTarget, setDeletionTarget] = useState<DeletionTarget | null>(null);

@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -16,7 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dog, Cat, Syringe, FileText, Stethoscope, Pill, Edit, PlusCircle, MoreVertical, HeartCrack, Trash2, ExternalLink, Download } from "lucide-react";
 import WeightTracker from "@/components/pets/weight-tracker";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { AddVaccineForm } from '@/components/pets/add-vaccine-form';
@@ -29,7 +28,7 @@ import { EditVaccineForm } from '@/components/pets/edit-vaccine-form';
 import { EditMedicationForm } from '@/components/pets/edit-medication-form';
 import { EditConsultationForm } from '@/components/pets/edit-consultation-form';
 import { useToast } from '@/hooks/use-toast';
-import { onAuthStateChanged } from 'firebase/auth';
+import { onAuthStateChanged, User } from 'firebase/auth';
 import { deleteFile } from '@/lib/storage';
 import { exportPetProfileAsPdf } from '@/lib/pdf-export';
 
@@ -56,7 +55,7 @@ export default function PetProfilePage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [activeDialog, setActiveDialog] = useState<string | null>(null);
   const [selectedItem, setSelectedItem] = useState<any>(null);
-  const [user, setUser] = useState(auth.currentUser);
+  const [user, setUser] = useState<User | null>(null);
   const [deletionTarget, setDeletionTarget] = useState<DeletionTarget | null>(null);
 
    useEffect(() => {

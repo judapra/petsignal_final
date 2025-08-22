@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 
@@ -45,7 +46,7 @@ export default function TermsOfServicePage() {
             </p>
             <ul>
                 <li>Cloud Firestore (banco de dados)</li>
-                <li>Firebase Authentication (autenticação e login)</li>
+                <li>Firebase Authentication (login e autenticação)</li>
                 <li>Firebase Storage (armazenamento de arquivos, fotos e documentos)</li>
             </ul>
             <p>

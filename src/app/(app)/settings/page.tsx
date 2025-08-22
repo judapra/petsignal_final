@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from "react";
@@ -15,9 +14,10 @@ import { messaging } from "@/lib/firebase";
 import { getToken, onMessage } from "firebase/messaging";
 import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { User } from "firebase/auth";
 
 export default function SettingsPage() {
-    const user = getCurrentUser();
+    const [user, setUser] = useState<User | null>(null);
     const router = useRouter();
     const { toast } = useToast();
     const [isDeleting, setIsDeleting] = useState(false);
@@ -28,6 +28,9 @@ export default function SettingsPage() {
     const VAPID_KEY = process.env.NEXT_PUBLIC_VAPID_KEY;
 
     useEffect(() => {
+        const currentUser = getCurrentUser();
+        setUser(currentUser);
+
         if ("Notification" in window) {
             setNotificationPermission(Notification.permission);
         }
