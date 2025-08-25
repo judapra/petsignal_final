@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 export const metadata: Metadata = {
   title: 'PetSignal',
   description: 'Gerencie a vida do seu pet com facilidade.',
+  manifest: '/manifest.json',
 };
 
 export default function RootLayout({
@@ -19,7 +20,6 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=PT+Sans:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet" />
-        <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#E8A003" />
       </head>
       <body className={cn("min-h-screen bg-background font-body antialiased")}>

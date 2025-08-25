@@ -1,24 +1,24 @@
-
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { Pet } from './placeholder-data';
 import { format } from 'date-fns';
 
 // Adiciona uma fonte que suporte caracteres latinos, como o português
-import { calligraffitti } from './calligraffitti-normal';
+// A fonte padrão do jsPDF (Helvetica) não tem todos os acentos
+// Uma alternativa é usar uma fonte como a "Roboto" que pode ser embutida.
+// Por simplicidade, vamos tentar com a fonte padrão e ver o resultado.
+// Se os acentos não funcionarem, precisaremos embutir uma fonte.
 
 export function exportPetProfileAsPdf(pet: Pet) {
     const doc = new jsPDF();
 
-    // Adiciona a fonte customizada
-    doc.addFileToVFS("Calligraffitti-Regular.ttf", calligraffitti);
-    doc.addFont("Calligraffitti-Regular.ttf", "Calligraffitti", "normal");
-    doc.setFont("Calligraffitti");
-    
     const formatDate = (dateString?: string) => {
         if (!dateString) return 'N/A';
         try {
-            return format(new Date(dateString), 'dd/MM/yyyy');
+            // Garante que a data seja interpretada como UTC para evitar problemas de fuso horário
+            const date = new Date(dateString);
+            const utcDate = new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+            return format(utcDate, 'dd/MM/yyyy');
         } catch {
             return dateString;
         }
@@ -47,14 +47,22 @@ export function exportPetProfileAsPdf(pet: Pet) {
         headStyles: { fillColor: [5, 33, 51] }, // Azul escuro do tema
     });
 
-    const finalYAfterDetails = (doc as any).lastAutoTable.finalY || 40;
+    let finalY = (doc as any).lastAutoTable.finalY || 40;
+
+    const checkPageBreak = (neededSpace: number) => {
+        if (finalY + neededSpace > doc.internal.pageSize.getHeight() - 20) {
+            doc.addPage();
+            finalY = 20;
+        }
+    }
 
     // Seção de Vacinas
     if (pet.vaccinations && pet.vaccinations.length > 0) {
+        checkPageBreak(30);
         doc.setFontSize(16);
-        doc.text('Carteira de Vacinação', 14, finalYAfterDetails + 15);
+        doc.text('Carteira de Vacinação', 14, finalY + 15);
         autoTable(doc, {
-            startY: finalYAfterDetails + 20,
+            startY: finalY + 20,
             head: [['Vacina', 'Data', 'Veterinário(a)', 'Próxima Dose']],
             body: pet.vaccinations.map(v => [
                 v.vaccineName,
@@ -65,16 +73,16 @@ export function exportPetProfileAsPdf(pet: Pet) {
             theme: 'striped',
             headStyles: { fillColor: [5, 33, 51] },
         });
+        finalY = (doc as any).lastAutoTable.finalY;
     }
-
-    const finalYAfterVaccines = (doc as any).lastAutoTable.finalY || finalYAfterDetails;
 
     // Seção de Medicamentos
     if (pet.medications && pet.medications.length > 0) {
+        checkPageBreak(30);
         doc.setFontSize(16);
-        doc.text('Medicamentos', 14, finalYAfterVaccines + 15);
+        doc.text('Medicamentos', 14, finalY + 15);
         autoTable(doc, {
-            startY: finalYAfterVaccines + 20,
+            startY: finalY + 20,
             head: [['Nome', 'Dosagem', 'Frequência', 'Início', 'Fim']],
             body: pet.medications.map(m => [
                 m.name,
@@ -86,17 +94,16 @@ export function exportPetProfileAsPdf(pet: Pet) {
             theme: 'striped',
             headStyles: { fillColor: [5, 33, 51] },
         });
+        finalY = (doc as any).lastAutoTable.finalY;
     }
-
-    const finalYAfterMedications = (doc as any).lastAutoTable.finalY || finalYAfterVaccines;
     
     // Seção de Consultas
     if (pet.consultations && pet.consultations.length > 0) {
-        doc.addPage();
+        checkPageBreak(30);
         doc.setFontSize(16);
-        doc.text('Histórico de Consultas', 14, 20);
+        doc.text('Histórico de Consultas', 14, finalY + 15);
         autoTable(doc, {
-            startY: 25,
+            startY: finalY + 20,
             head: [['Data', 'Motivo', 'Veterinário(a)', 'Local']],
             body: pet.consultations.map(c => [
                 formatDate(c.date),
@@ -107,15 +114,16 @@ export function exportPetProfileAsPdf(pet: Pet) {
             theme: 'grid',
             headStyles: { fillColor: [5, 33, 51] },
         });
+        finalY = (doc as any).lastAutoTable.finalY;
     }
     
     // Seção de Exames
      if (pet.exams && pet.exams.length > 0) {
-        const finalYAfterConsultations = (doc as any).lastAutoTable.finalY || 25;
+        checkPageBreak(30);
         doc.setFontSize(16);
-        doc.text('Histórico de Exames', 14, finalYAfterConsultations + 15);
+        doc.text('Histórico de Exames', 14, finalY + 15);
         autoTable(doc, {
-            startY: finalYAfterConsultations + 20,
+            startY: finalY + 20,
             head: [['Data', 'Tipo de Exame', 'Resultado']],
             body: pet.exams.map(e => [
                 formatDate(e.date),
@@ -125,8 +133,8 @@ export function exportPetProfileAsPdf(pet: Pet) {
             theme: 'grid',
             headStyles: { fillColor: [5, 33, 51] },
         });
+        finalY = (doc as any).lastAutoTable.finalY;
     }
-
 
     // Salva o arquivo
     doc.save(`relatorio_saude_${pet.name.toLowerCase().replace(/ /g, '_')}.pdf`);
