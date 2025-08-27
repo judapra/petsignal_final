@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -66,7 +67,7 @@ export default function HealthPage() {
       return;
     }
     setLoading(true);
-    const petsQuery = query(collection(db, "pets"), where("ownerUid", "==", user.uid));
+    const petsQuery = query(collection(db, "pets"), where("ownerUids", "array-contains", user.uid));
     const locationsQuery = query(collection(db, "locations"), where("ownerUid", "==", user.uid));
 
     let petsLoaded = false;

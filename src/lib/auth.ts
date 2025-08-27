@@ -73,7 +73,7 @@ async function deleteAllUserData() {
     const userRef = doc(db, "users", user.uid);
     batch.delete(userRef);
 
-    const petsQuery = query(collection(db, "pets"), where("ownerUid", "==", user.uid));
+    const petsQuery = query(collection(db, "pets"), where("ownerUids", "array-contains", user.uid));
     const petsSnapshot = await getDocs(petsQuery);
 
     for (const petDoc of petsSnapshot.docs) {
@@ -120,4 +120,3 @@ export async function deleteUserAccount() {
         console.error("Erro durante o processo de exclusão da conta:", error);
         throw error;
     }
-}

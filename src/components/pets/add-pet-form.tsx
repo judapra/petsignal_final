@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -15,6 +16,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useState } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { uploadFile } from '@/lib/storage';
+import { v4 as uuidv4 } from 'uuid';
 
 const petFormSchema = z.object({
   name: z.string().min(2, { message: 'O nome deve ter pelo menos 2 caracteres.' }),
@@ -71,7 +73,6 @@ export function AddPetForm({ onSuccess }: { onSuccess?: () => void }) {
       let photoUrl: string | null = null;
       let photoPath: string | null = null;
 
-      // 1. Fazer o upload da foto primeiro, se existir
       if (values.photo) {
         const filePath = `pets/${petId}/profile/${Date.now()}_${values.photo.name}`;
         const result = await uploadFile(values.photo, filePath);
@@ -81,7 +82,7 @@ export function AddPetForm({ onSuccess }: { onSuccess?: () => void }) {
       
       const petData: { [key: string]: any } = {
         id: petId,
-        ownerUid: user.uid,
+        ownerUids: [user.uid],
         createdAt: new Date().toISOString(),
         name: values.name,
         species: values.species,
@@ -94,6 +95,7 @@ export function AddPetForm({ onSuccess }: { onSuccess?: () => void }) {
         microchip: values.microchip || null,
         healthPlan: values.healthPlan || null,
         isSpayed: values.isSpayed,
+        shareId: uuidv4(),
         medications: [],
         consultations: [],
         vaccinations: [],
@@ -115,7 +117,6 @@ export function AddPetForm({ onSuccess }: { onSuccess?: () => void }) {
         petData.age = null;
       }
       
-      // 2. Salvar os dados do pet no Firestore
       await setDoc(petDocRef, petData);
 
       toast({
@@ -247,7 +248,7 @@ export function AddPetForm({ onSuccess }: { onSuccess?: () => void }) {
             control={form.control}
             name="isBirthDateApproximate"
             render={({ field }) => (
-              <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 shadow">
+              <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 shadow-sm">
                 <FormControl>
                   <Checkbox
                     checked={field.value}
