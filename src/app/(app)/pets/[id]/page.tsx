@@ -34,6 +34,7 @@ import { deleteFile } from '@/lib/storage';
 import { exportPetProfileAsPdf } from '@/lib/pdf-export';
 import { v4 as uuidv4 } from 'uuid';
 import { Input } from '@/components/ui/input';
+import { DialogHeader } from '@/components/ui/dialog';
 
 type DeletionTarget =
     | { type: 'exam'; item: Exam }
@@ -122,7 +123,7 @@ export default function PetProfilePage() {
 
     const locationsQuery = query(collection(db, "locations"), where("ownerUid", "==", user.uid));
     const locUnsubscribe = onSnapshot(locationsQuery, (snapshot) => {
-        const locationsData = snapshot.docs.map(loc => ({ id: doc.id, ...doc.data() } as SavedLocation));
+        const locationsData = snapshot.docs.map(loc => ({ id: doc.id, ...loc.data() } as SavedLocation));
         setLocations(locationsData);
     });
 
@@ -702,4 +703,3 @@ export default function PetProfilePage() {
     </AlertDialog>
   );
 }
-
