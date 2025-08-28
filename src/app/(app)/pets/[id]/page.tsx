@@ -49,7 +49,7 @@ export default function PetProfilePage() {
   const params = useParams();
   const router = useRouter();
   const { toast } = useToast();
-  const id = params.id as string;
+  const petId = params.petId as string;
 
   const [pet, setPet] = useState<Pet | null>(null);
   const [locations, setLocations] = useState<SavedLocation[]>([]);
@@ -89,11 +89,11 @@ export default function PetProfilePage() {
   }
 
   const fetchPet = useCallback(() => {
-    if (!id || !user) return;
+    if (!petId || !user) return;
 
     setLoading(true);
 
-    const docRef = doc(db, "pets", id);
+    const docRef = doc(db, "pets", petId);
     const petUnsubscribe = onSnapshot(docRef, (docSnap) => {
       if (docSnap.exists()) {
         const petData = { id: docSnap.id, ...docSnap.data() } as Pet
@@ -123,7 +123,7 @@ export default function PetProfilePage() {
 
     const locationsQuery = query(collection(db, "locations"), where("ownerUid", "==", user.uid));
     const locUnsubscribe = onSnapshot(locationsQuery, (snapshot) => {
-        const locationsData = snapshot.docs.map(loc => ({ id: doc.id, ...loc.data() } as SavedLocation));
+        const locationsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as SavedLocation));
         setLocations(locationsData);
     });
 
@@ -131,7 +131,7 @@ export default function PetProfilePage() {
         petUnsubscribe();
         locUnsubscribe();
     };
-  }, [id, user, router, toast]);
+  }, [petId, user, router, toast]);
 
   useEffect(() => {
     const unsubscribe = fetchPet();
@@ -166,7 +166,7 @@ export default function PetProfilePage() {
             const petRef = doc(db, "pets", pet.id);
             await updateDoc(petRef, { shareId });
         }
-        const link = `${window.location.origin}/public/pet/${shareId}`;
+        const link = `${window.location.origin}/share/pet/${shareId}`;
         setShareLink(link);
         setActiveDialog('share');
         setIsDialogOpen(true);
@@ -652,10 +652,10 @@ export default function PetProfilePage() {
         </Tabs>
 
         <DialogContent>
-            {activeDialog === 'vaccine' && pet && <AddVaccineForm petId={id} allPets={[pet]} onSuccess={handleUpdateSuccess} />}
-            {activeDialog === 'exam' && pet && <AddExamForm petId={id} allPets={[pet]} onSuccess={handleUpdateSuccess} />}
-            {activeDialog === 'medication' && pet && <AddMedicationForm petId={id} allPets={[pet]} onSuccess={handleUpdateSuccess} />}
-            {activeDialog === 'consultation' && pet && <AddConsultationForm petId={id} allPets={[pet]} locations={locations} onSuccess={handleUpdateSuccess} />}
+            {activeDialog === 'vaccine' && pet && <AddVaccineForm petId={petId} allPets={[pet]} onSuccess={handleUpdateSuccess} />}
+            {activeDialog === 'exam' && pet && <AddExamForm petId={petId} allPets={[pet]} onSuccess={handleUpdateSuccess} />}
+            {activeDialog === 'medication' && pet && <AddMedicationForm petId={petId} allPets={[pet]} onSuccess={handleUpdateSuccess} />}
+            {activeDialog === 'consultation' && pet && <AddConsultationForm petId={petId} allPets={[pet]} locations={locations} onSuccess={handleUpdateSuccess} />}
             {activeDialog === 'edit-pet' && selectedItem && <EditPetForm pet={selectedItem} onSuccess={handleUpdateSuccess} />}
             {activeDialog === 'edit-exam' && selectedItem && pet && <EditExamForm pet={pet} exam={selectedItem} onSuccess={handleUpdateSuccess} />}
             {activeDialog === 'edit-vaccine' && selectedItem && pet && <EditVaccineForm pet={pet} vaccine={selectedItem} onSuccess={handleUpdateSuccess} />}
