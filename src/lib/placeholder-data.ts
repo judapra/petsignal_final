@@ -14,7 +14,7 @@ export type Pet = {
   isSpayed: boolean;
   healthPlan?: string;
   isDeceased?: boolean;
-  ownerUids: string[]; // Alterado de ownerUid para suportar múltiplos donos
+  ownerUids: string[];
   shareId?: string; 
   medications: Medication[];
   consultations: Consultation[];

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -13,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dog, Cat, Syringe, FileText, Stethoscope, Pill, Edit, PlusCircle, MoreVertical, HeartCrack, Trash2, ExternalLink, Download } from "lucide-react";
+import { Dog, Cat, Syringe, FileText, Stethoscope, Pill, Edit, PlusCircle, MoreVertical, HeartCrack, Trash2, ExternalLink, Download, Share2, ClipboardCopy, Check } from "lucide-react";
 import WeightTracker from "@/components/pets/weight-tracker";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -31,8 +32,10 @@ import { useToast } from '@/hooks/use-toast';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { deleteFile } from '@/lib/storage';
 import { exportPetProfileAsPdf } from '@/lib/pdf-export';
+import { v4 as uuidv4 } from 'uuid';
+import { Input } from '@/components/ui/input';
 
-type DeletionTarget = 
+type DeletionTarget =
     | { type: 'exam'; item: Exam }
     | { type: 'vaccine'; item: Vaccination }
     | { type: 'medication'; item: Medication }
@@ -51,12 +54,14 @@ export default function PetProfilePage() {
   const [locations, setLocations] = useState<SavedLocation[]>([]);
   const [loading, setLoading] = useState(true);
   const [calculatedAge, setCalculatedAge] = useState<string | null>(null);
-  
+
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [activeDialog, setActiveDialog] = useState<string | null>(null);
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [user, setUser] = useState<User | null>(null);
   const [deletionTarget, setDeletionTarget] = useState<DeletionTarget | null>(null);
+  const [shareLink, setShareLink] = useState('');
+  const [isCopied, setIsCopied] = useState(false);
 
    useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
@@ -84,15 +89,15 @@ export default function PetProfilePage() {
 
   const fetchPet = useCallback(() => {
     if (!id || !user) return;
-    
+
     setLoading(true);
 
     const docRef = doc(db, "pets", id);
     const petUnsubscribe = onSnapshot(docRef, (docSnap) => {
       if (docSnap.exists()) {
         const petData = { id: docSnap.id, ...docSnap.data() } as Pet
-        
-        if (petData.ownerUid !== user.uid) {
+
+        if (!petData.ownerUids.includes(user.uid)) {
             toast({ variant: "destructive", title: "Acesso Negado", description: "Você não tem permissão para ver este pet." });
             router.push('/dashboard');
             return;
@@ -117,7 +122,7 @@ export default function PetProfilePage() {
 
     const locationsQuery = query(collection(db, "locations"), where("ownerUid", "==", user.uid));
     const locUnsubscribe = onSnapshot(locationsQuery, (snapshot) => {
-        const locationsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as SavedLocation));
+        const locationsData = snapshot.docs.map(loc => ({ id: doc.id, ...doc.data() } as SavedLocation));
         setLocations(locationsData);
     });
 
@@ -137,7 +142,7 @@ export default function PetProfilePage() {
     setActiveDialog(null);
     setSelectedItem(null);
   };
-  
+
   const handleMarkAsDeceased = async () => {
     if (!pet) return;
     try {
@@ -150,6 +155,30 @@ export default function PetProfilePage() {
       setDeletionTarget(null);
     }
   };
+
+  const handleShare = async () => {
+    if (!pet) return;
+    try {
+        let shareId = pet.shareId;
+        if (!shareId) {
+            shareId = uuidv4();
+            const petRef = doc(db, "pets", pet.id);
+            await updateDoc(petRef, { shareId });
+        }
+        const link = `${window.location.origin}/public/pet/${shareId}`;
+        setShareLink(link);
+        setActiveDialog('share');
+        setIsDialogOpen(true);
+    } catch (error) {
+        toast({ variant: "destructive", title: "Erro", description: "Não foi possível gerar o link de compartilhamento." });
+    }
+  }
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(shareLink);
+    setIsCopied(true);
+    setTimeout(() => setIsCopied(false), 2000);
+  }
 
   const handleDeletePet = async () => {
     if (!pet) return;
@@ -189,9 +218,9 @@ export default function PetProfilePage() {
         let updatedArray: any[] = [];
         let arrayField: keyof Pet | null = null;
         let filePathToDelete: string | undefined;
-        
+
         switch(type) {
-            case 'exam': 
+            case 'exam':
                 arrayField = 'exams';
                 filePathToDelete = (item as Exam).resultPath;
                 break;
@@ -206,13 +235,13 @@ export default function PetProfilePage() {
                 filePathToDelete = (item as Consultation).attachmentPath;
                 break;
         }
-        
+
         if (arrayField) {
             const currentArray = (petData[arrayField] as any[]) || [];
             updatedArray = currentArray.filter(i => i.id !== item.id);
             await updateDoc(petRef, { [arrayField]: updatedArray });
         }
-        
+
         if (filePathToDelete) {
           await deleteFile(filePathToDelete);
         }
@@ -265,7 +294,7 @@ export default function PetProfilePage() {
   }
 
   if (!pet) {
-    return null; 
+    return null;
   }
 
   const getDeletionDialogContent = () => {
@@ -317,12 +346,16 @@ export default function PetProfilePage() {
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <Button variant="outline" onClick={() => openDialog('edit-pet', pet)}>
+                 <Button variant="outline" onClick={() => openDialog('edit-pet', pet)}>
                     <Edit className="mr-2 h-4 w-4" /> Editar Perfil
                 </Button>
-                
+
                  <Button variant="outline" onClick={() => exportPetProfileAsPdf(pet)}>
                   <Download className="mr-2 h-4 w-4" /> Exportar PDF
+                </Button>
+
+                <Button variant="outline" onClick={handleShare}>
+                    <Share2 className="mr-2 h-4 w-4" /> Compartilhar
                 </Button>
 
                    <DropdownMenu>
@@ -360,7 +393,7 @@ export default function PetProfilePage() {
             <TabsTrigger value="medications">Medicamentos</TabsTrigger>
             <TabsTrigger value="weight">Peso</TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="overview" className="mt-6">
               <Card>
                   <CardHeader>
@@ -400,7 +433,7 @@ export default function PetProfilePage() {
                   </CardContent>
               </Card>
           </TabsContent>
-          
+
           <TabsContent value="consultations" className="mt-6">
             <Card>
                <CardHeader>
@@ -610,13 +643,13 @@ export default function PetProfilePage() {
               </CardContent>
             </Card>
           </TabsContent>
-          
+
           <TabsContent value="weight" className="mt-6">
             {pet.weightHistory && <WeightTracker pet={pet} />}
           </TabsContent>
 
         </Tabs>
-        
+
         <DialogContent>
             {activeDialog === 'vaccine' && pet && <AddVaccineForm petId={id} allPets={[pet]} onSuccess={handleUpdateSuccess} />}
             {activeDialog === 'exam' && pet && <AddExamForm petId={id} allPets={[pet]} onSuccess={handleUpdateSuccess} />}
@@ -627,6 +660,22 @@ export default function PetProfilePage() {
             {activeDialog === 'edit-vaccine' && selectedItem && pet && <EditVaccineForm pet={pet} vaccine={selectedItem} onSuccess={handleUpdateSuccess} />}
             {activeDialog === 'edit-medication' && selectedItem && pet && <EditMedicationForm pet={pet} medication={selectedItem} onSuccess={handleUpdateSuccess} />}
             {activeDialog === 'edit-consultation' && selectedItem && pet && <EditConsultationForm pet={pet} consultation={selectedItem} locations={locations} onSuccess={handleUpdateSuccess} />}
+            {activeDialog === 'share' && (
+                 <>
+                    <DialogHeader>
+                        <DialogTitle>Compartilhar Perfil de {pet.name}</DialogTitle>
+                        <DialogDescription>
+                            Copie o link abaixo para compartilhar uma versão pública e somente leitura do perfil do seu pet.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="flex items-center space-x-2">
+                        <Input value={shareLink} readOnly />
+                        <Button onClick={handleCopyLink}>
+                            {isCopied ? <Check className="h-4 w-4" /> : <ClipboardCopy className="h-4 w-4" />}
+                        </Button>
+                    </div>
+                </>
+            )}
         </DialogContent>
       </div>
        <AlertDialogContent>
@@ -636,7 +685,7 @@ export default function PetProfilePage() {
             </AlertDialogHeader>
             <AlertDialogFooter>
                 <AlertDialogCancel onClick={() => setDeletionTarget(null)}>Cancelar</AlertDialogCancel>
-                <AlertDialogAction 
+                <AlertDialogAction
                     onClick={() => {
                         if (!deletionTarget) return;
                         if (deletionTarget.type === 'pet') handleDeletePet();
@@ -653,3 +702,4 @@ export default function PetProfilePage() {
     </AlertDialog>
   );
 }
+

@@ -120,3 +120,4 @@ export async function deleteUserAccount() {
         console.error("Erro durante o processo de exclusão da conta:", error);
         throw error;
     }
+}
