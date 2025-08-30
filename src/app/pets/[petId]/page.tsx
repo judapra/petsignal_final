@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -93,7 +92,7 @@ export default function PetProfilePage() {
       if (docSnap.exists()) {
         const petData = { id: docSnap.id, ...docSnap.data() } as Pet
         
-        if (petData.ownerUid !== user.uid) {
+        if (petData.ownerUids && !petData.ownerUids.includes(user.uid)) {
             toast({ variant: "destructive", title: "Acesso Negado", description: "Você não tem permissão para ver este pet." });
             router.push('/dashboard');
             return;
@@ -654,4 +653,3 @@ export default function PetProfilePage() {
     </AlertDialog>
   );
 }
-

@@ -1,4 +1,3 @@
-
 'use client'
 
 import { useState, useEffect } from 'react';
@@ -46,7 +45,7 @@ export default function ExpensesPage() {
     }
 
     setLoading(true);
-    const petsQuery = query(collection(db, "pets"), where("ownerUids", "array-contains", user.uid));
+    const petsQuery = query(collection(db, "pets"), where("ownerUid", "==", user.uid));
     const expensesQuery = query(collection(db, "expenses"), where("ownerUid", "==", user.uid));
 
     const unsubscribePets = onSnapshot(petsQuery, (snapshot) => {
