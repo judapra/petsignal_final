@@ -11,7 +11,7 @@ import { DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Pet, Expense } from '@/lib/placeholder-data';
 import { useState } from 'react';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '../../hooks/use-toast';
 import { db } from '@/lib/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 
@@ -191,5 +191,3 @@ export function EditExpenseForm({ expense, pets, onSuccess }: EditExpenseFormPro
     </>
   );
 }
-
-    

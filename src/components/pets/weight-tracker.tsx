@@ -2,16 +2,16 @@
 'use client';
 
 import { useState } from "react";
-import type { Pet, WeightEntry } from "../../lib/placeholder-data";
+import type { Pet, WeightEntry } from "@/lib/placeholder-data";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../ui/card";
-import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartConfig } from "@/components/ui/chart";
+import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartConfig } from "../ui/chart";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { PlusCircle, Weight, Loader2 } from "lucide-react";
 import { useToast } from "../../hooks/use-toast";
 import { doc, updateDoc } from "firebase/firestore";
-import { db } from "../../lib/firebase";
+import { db } from "@/lib/firebase";
 
 const chartConfig = {
   weight: {

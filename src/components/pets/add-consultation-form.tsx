@@ -4,22 +4,22 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { Button } from '@/components/ui/button';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Pet, SavedLocation } from '@/lib/placeholder-data';
+import { Button } from '../ui/button';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '../ui/form';
+import { Input } from '../ui/input';
+import { DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '../ui/dialog';
+import { Textarea } from '../ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { Pet, SavedLocation } from '../../lib/placeholder-data';
 import { Clock, Paperclip, PlusCircle, Search, Send } from 'lucide-react';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { ScrollArea } from '../ui/scroll-area';
 import { useState } from 'react';
-import { useToast } from '@/hooks/use-toast';
-import { db, auth } from '@/lib/firebase';
+import { useToast } from '../../hooks/use-toast';
+import { db, auth } from '../../lib/firebase';
 import { doc, getDoc, updateDoc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { v4 as uuidv4 } from 'uuid';
 import Link from 'next/link';
-import { uploadFile } from '@/lib/storage';
+import { uploadFile } from '../../lib/storage';
 
 const consultationFormSchema = z.object({
   petId: z.string({ required_error: 'Selecione um pet.'}),

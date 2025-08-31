@@ -1,20 +1,21 @@
+
 'use client'
 
 import { useState, useEffect } from 'react';
 import { SavedLocation } from "@/lib/placeholder-data";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { PlusCircle, MapPin, Scissors, Stethoscope, Trees, ShoppingCart, MoreVertical, Edit, Trash2, ExternalLink } from "lucide-react";
+import { Button } from "../../../components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../../../components/ui/card";
+import { PlusCircle, MapPin, Building, Stethoscope, Trees, ShoppingCart, MoreVertical, Edit, Trash2, ExternalLink } from "lucide-react";
 import { db, auth } from '@/lib/firebase';
 import { collection, onSnapshot, query, where, doc, deleteDoc } from 'firebase/firestore';
-import { onAuthStateChanged, User } from 'firebase/auth';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { AddLocationForm } from '@/components/pets/add-location-form';
-import { EditLocationForm } from '@/components/pets/edit-location-form';
-import { useToast } from '@/hooks/use-toast';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
-import { Skeleton } from '@/components/ui/skeleton';
+import { onAuthStateChanged } from 'firebase/auth';
+import { Dialog, DialogContent, DialogTrigger } from '../../../components/ui/dialog';
+import { AddLocationForm } from '../../../components/pets/add-location-form';
+import { EditLocationForm } from '../../../components/pets/edit-location-form';
+import { useToast } from '../../../hooks/use-toast';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../../../components/ui/dropdown-menu';
+import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '../../../components/ui/alert-dialog';
+import { Skeleton } from '../../../components/ui/skeleton';
 
 
 const typeIcons: { [key: string]: JSX.Element } = {
@@ -27,7 +28,7 @@ const typeIcons: { [key: string]: JSX.Element } = {
 export default function LocationsPage() {
   const [locations, setLocations] = useState<SavedLocation[]>([]);
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState(auth.currentUser);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [activeDialog, setActiveDialog] = useState<'add' | 'edit' | null>(null);
   const [selectedLocation, setSelectedLocation] = useState<SavedLocation | null>(null);

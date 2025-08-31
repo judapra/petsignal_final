@@ -4,21 +4,21 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { Button } from '@/components/ui/button';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
-import { Pet, Consultation, SavedLocation } from '@/lib/placeholder-data';
+import { Button } from '../ui/button';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '../ui/form';
+import { Input } from '../ui/input';
+import { DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '../ui/dialog';
+import { Pet, Consultation, SavedLocation } from '../../lib/placeholder-data';
 import { useState } from 'react';
-import { useToast } from '@/hooks/use-toast';
-import { db, auth } from '@/lib/firebase';
+import { useToast } from '../../hooks/use-toast';
+import { db, auth } from '../../lib/firebase';
 import { doc, updateDoc, collection, addDoc, serverTimestamp, getDoc } from 'firebase/firestore';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '../ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import Link from 'next/link';
 import { PlusCircle } from 'lucide-react';
-import { uploadFile, deleteFile } from '@/lib/storage';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { uploadFile, deleteFile } from '../../lib/storage';
+import { ScrollArea } from '../ui/scroll-area';
 
 const consultationFormSchema = z.object({
   date: z.string().refine((val) => !isNaN(Date.parse(val)), { message: "Data inválida."}),
@@ -117,6 +117,10 @@ export function EditConsultationForm({ pet, consultation, locations = [], onSucc
             consultations: updatedConsultations
         });
         
+        // Expense logic can be added here if needed, for now focusing on attachment
+        // For example, if cost changes, find and update or create expense record.
+        // This is complex and better handled separately if not the primary goal.
+
         toast({ title: "Sucesso!", description: "Consulta atualizada." });
         onSuccess?.();
     } catch (error) {
