@@ -2,28 +2,28 @@
 'use client'
 
 import { useState, useEffect } from 'react';
-import { Pet, Expense } from "../../../lib/placeholder-data";
-import { Button } from "../../../components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../../../components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../../components/ui/table";
+import { Pet, Expense } from "@/lib/placeholder-data";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { PlusCircle, DollarSign, MoreHorizontal, Edit, Trash2, Loader2 } from "lucide-react";
-import { db, auth } from '../../../lib/firebase';
+import { db, auth } from '@/lib/firebase';
 import { collection, onSnapshot, query, where, doc, deleteDoc } from 'firebase/firestore';
-import { onAuthStateChanged } from 'firebase/auth';
-import { Dialog, DialogContent, DialogTrigger } from '../../../components/ui/dialog';
-import { AddExpenseForm } from '../../../components/pets/add-expense-form';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../../../components/ui/dropdown-menu';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "../../../components/ui/alert-dialog";
-import { useToast } from '../../../hooks/use-toast';
-import { EditExpenseForm } from '../../../components/pets/edit-expense-form';
-import { Skeleton } from '../../../components/ui/skeleton';
+import { onAuthStateChanged, User } from 'firebase/auth';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { AddExpenseForm } from '@/components/pets/add-expense-form';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { useToast } from '@/hooks/use-toast';
+import { EditExpenseForm } from '@/components/pets/edit-expense-form';
+import { Skeleton } from '@/components/ui/skeleton';
 
 
 export default function ExpensesPage() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [pets, setPets] = useState<Pet[]>([]);
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState(auth.currentUser);
+  const [user, setUser] = useState<User | null>(null);
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [activeDialog, setActiveDialog] = useState<'add' | 'edit' | null>(null);
@@ -46,7 +46,7 @@ export default function ExpensesPage() {
     }
 
     setLoading(true);
-    const petsQuery = query(collection(db, "pets"), where("ownerUid", "==", user.uid));
+    const petsQuery = query(collection(db, "pets"), where("ownerUids", "array-contains", user.uid));
     const expensesQuery = query(collection(db, "expenses"), where("ownerUid", "==", user.uid));
 
     const unsubscribePets = onSnapshot(petsQuery, (snapshot) => {
@@ -231,3 +231,5 @@ export default function ExpensesPage() {
     </Dialog>
   );
 }
+
+    

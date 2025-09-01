@@ -5,14 +5,14 @@ import { useState, useEffect } from "react";
 import { Pet, Consultation, Vaccination, Medication, Grooming } from "@/lib/placeholder-data";
 import { db, auth } from "@/lib/firebase";
 import { collection, onSnapshot, query, where } from "firebase/firestore";
-import { onAuthStateChanged } from "firebase/auth";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../../../components/ui/card";
+import { onAuthStateChanged, User } from "firebase/auth";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Bell, Syringe, Pill, Stethoscope, Scissors, Dog, Cat, CalendarPlus } from "lucide-react";
-import { Badge } from "../../../components/ui/badge";
-import { Skeleton } from "../../../components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { format, isAfter, isBefore, isToday, addDays, differenceInDays, addHours } from 'date-fns';
 import { generateIcsContent, downloadIcsFile } from '@/lib/utils';
-import { Button } from "../../../components/ui/button";
+import { Button } from "@/components/ui/button";
 
 type Reminder = {
     id: string;
@@ -28,7 +28,7 @@ type Reminder = {
 export default function RemindersPage() {
     const [pets, setPets] = useState<Pet[]>([]);
     const [loading, setLoading] = useState(true);
-    const [user, setUser] = useState(auth.currentUser);
+    const [user, setUser] = useState<User | null>(null);
 
     useEffect(() => {
         const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
@@ -45,7 +45,7 @@ export default function RemindersPage() {
         }
         setLoading(true);
         const petsCollection = collection(db, "pets");
-        const q = query(petsCollection, where("ownerUid", "==", user.uid));
+        const q = query(petsCollection, where("ownerUids", "array-contains", user.uid));
         
         const unsubscribe = onSnapshot(q, (querySnapshot) => {
             const petsList = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Pet));
@@ -238,3 +238,5 @@ export default function RemindersPage() {
         </div>
     );
 }
+
+    

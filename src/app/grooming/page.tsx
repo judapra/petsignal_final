@@ -3,22 +3,22 @@
 
 import { useState, useEffect } from 'react';
 import { Pet, Grooming, SavedLocation } from "@/lib/placeholder-data";
-import { Button } from "../../../components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../../../components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../../components/ui/table";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { PlusCircle, MoreVertical, Edit, Trash2, Scissors, CheckCircle, Clock, XCircle, ExternalLink } from "lucide-react";
-import { Badge } from "../../../components/ui/badge";
-import { Dialog, DialogContent } from "../../../components/ui/dialog";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../../../components/ui/dropdown-menu";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "../../../components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { db, auth } from '@/lib/firebase';
 import { collection, onSnapshot, query, where, doc, updateDoc, getDoc } from 'firebase/firestore';
-import { onAuthStateChanged } from 'firebase/auth';
-import { useToast } from '../../../hooks/use-toast';
+import { onAuthStateChanged, User } from 'firebase/auth';
+import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
-import { AddGroomingForm } from '../../../components/pets/add-grooming-form';
-import { EditGroomingForm } from '../../../components/pets/edit-grooming-form';
-import { Skeleton } from '../../../components/ui/skeleton';
+import { AddGroomingForm } from '@/components/pets/add-grooming-form';
+import { EditGroomingForm } from '@/components/pets/edit-grooming-form';
+import { Skeleton } from '@/components/ui/skeleton';
 
 type EnrichedGrooming = Grooming & { petName: string; petId: string; address?: string };
 
@@ -28,7 +28,7 @@ export default function GroomingPage() {
   const [pets, setPets] = useState<Pet[]>([]);
   const [locations, setLocations] = useState<SavedLocation[]>([]);
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState(auth.currentUser);
+  const [user, setUser] = useState<User | null>(null);
   const [activeDialog, setActiveDialog] = useState<string | null>(null);
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [deletionTarget, setDeletionTarget] = useState<DeletionTarget | null>(null);
@@ -61,7 +61,7 @@ export default function GroomingPage() {
       }
     };
 
-    const petsQuery = query(collection(db, "pets"), where("ownerUid", "==", user.uid));
+    const petsQuery = query(collection(db, "pets"), where("ownerUids", "array-contains", user.uid));
     const locationsQuery = query(collection(db, "locations"), where("ownerUid", "==", user.uid));
 
     const unsubscribePets = onSnapshot(petsQuery, (snapshot) => {
@@ -260,3 +260,5 @@ export default function GroomingPage() {
     </AlertDialog>
   );
 }
+
+    
