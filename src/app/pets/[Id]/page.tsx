@@ -1,36 +1,36 @@
-
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
 import Image from "next/image";
 import { notFound, useParams, useRouter } from "next/navigation";
 import { doc, getDoc, updateDoc, deleteDoc, writeBatch, collection, onSnapshot, query, where } from "firebase/firestore";
-import { db, storage, auth } from "../../../../lib/firebase";
+import { db, storage, auth } from "@/lib/firebase";
 import { ref, deleteObject } from "firebase/storage";
-import type { Pet, Exam, Vaccination, Medication, Consultation, WeightEntry, SavedLocation } from "../../../../lib/placeholder-data";
-import { Skeleton } from "../../../../components/ui/skeleton";
-import { Badge } from "../../../../components/ui/badge";
-import { Button } from "../../../../components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../../../../components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../../components/ui/tabs";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../../../components/ui/table";
-import { Dog, Cat, Syringe, FileText, Stethoscope, Pill, Edit, PlusCircle, MoreVertical, HeartCrack, Trash2, ExternalLink } from "lucide-react";
-import WeightTracker from "../../../../components/pets/weight-tracker";
-import { Dialog, DialogContent, DialogTrigger } from "../../../../components/ui/dialog";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../../../../components/ui/dropdown-menu";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "../../../../components/ui/alert-dialog";
-import { AddVaccineForm } from '../../../../components/pets/add-vaccine-form';
-import { AddExamForm } from '../../../../components/pets/add-exam-form';
-import { AddMedicationForm } from '../../../../components/pets/add-medication-form';
-import { AddConsultationForm } from '../../../../components/pets/add-consultation-form';
-import { EditPetForm } from '../../../../components/pets/edit-pet-form';
-import { EditExamForm } from '../../../../components/pets/edit-exam-form';
-import { EditVaccineForm } from '../../../../components/pets/edit-vaccine-form';
-import { EditMedicationForm } from '../../../../components/pets/edit-medication-form';
-import { EditConsultationForm } from '../../../../components/pets/edit-consultation-form';
-import { useToast } from '../../../../hooks/use-toast';
-import { onAuthStateChanged } from 'firebase/auth';
-import { deleteFile } from '../../../../lib/storage';
+import type { Pet, Exam, Vaccination, Medication, Consultation, WeightEntry, SavedLocation } from "@/lib/placeholder-data";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Dog, Cat, Syringe, FileText, Stethoscope, Pill, Edit, PlusCircle, MoreVertical, HeartCrack, Trash2, ExternalLink, Download } from "lucide-react";
+import WeightTracker from "@/components/pets/weight-tracker";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { AddVaccineForm } from '@/components/pets/add-vaccine-form';
+import { AddExamForm } from '@/components/pets/add-exam-form';
+import { AddMedicationForm } from '@/components/pets/add-medication-form';
+import { AddConsultationForm } from '@/components/pets/add-consultation-form';
+import { EditPetForm } from '@/components/pets/edit-pet-form';
+import { EditExamForm } from '@/components/pets/edit-exam-form';
+import { EditVaccineForm } from '@/components/pets/edit-vaccine-form';
+import { EditMedicationForm } from '@/components/pets/edit-medication-form';
+import { EditConsultationForm } from '@/components/pets/edit-consultation-form';
+import { useToast } from '@/hooks/use-toast';
+import { onAuthStateChanged, User } from 'firebase/auth';
+import { deleteFile } from '@/lib/storage';
+import { exportPetProfileAsPdf } from '@/lib/pdf-export';
 
 type DeletionTarget = 
     | { type: 'exam'; item: Exam }
@@ -45,7 +45,7 @@ export default function PetProfilePage() {
   const params = useParams();
   const router = useRouter();
   const { toast } = useToast();
-  const id = params.id as string;
+  const petId = params.petId as string;
 
   const [pet, setPet] = useState<Pet | null>(null);
   const [locations, setLocations] = useState<SavedLocation[]>([]);
@@ -55,7 +55,7 @@ export default function PetProfilePage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [activeDialog, setActiveDialog] = useState<string | null>(null);
   const [selectedItem, setSelectedItem] = useState<any>(null);
-  const [user, setUser] = useState(auth.currentUser);
+  const [user, setUser] = useState<User | null>(null);
   const [deletionTarget, setDeletionTarget] = useState<DeletionTarget | null>(null);
 
    useEffect(() => {
@@ -83,16 +83,16 @@ export default function PetProfilePage() {
   }
 
   const fetchPet = useCallback(() => {
-    if (!id || !user) return;
+    if (!petId || !user) return;
     
     setLoading(true);
 
-    const docRef = doc(db, "pets", id);
+    const docRef = doc(db, "pets", petId);
     const petUnsubscribe = onSnapshot(docRef, (docSnap) => {
       if (docSnap.exists()) {
         const petData = { id: docSnap.id, ...docSnap.data() } as Pet
         
-        if (petData.ownerUid !== user.uid) {
+        if (petData.ownerUids && !petData.ownerUids.includes(user.uid)) {
             toast({ variant: "destructive", title: "Acesso Negado", description: "Você não tem permissão para ver este pet." });
             router.push('/dashboard');
             return;
@@ -125,7 +125,7 @@ export default function PetProfilePage() {
         petUnsubscribe();
         locUnsubscribe();
     };
-  }, [id, user, router, toast]);
+  }, [petId, user, router, toast]);
 
   useEffect(() => {
     const unsubscribe = fetchPet();
@@ -285,7 +285,7 @@ export default function PetProfilePage() {
 
   return (
     <AlertDialog onOpenChange={(isOpen) => {if (!isOpen) setDeletionTarget(null)}}>
-    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+    <Dialog open={isDialogOpen} onOpenChange={(isOpen) => { if (!isOpen) handleUpdateSuccess()}}>
       <div className="space-y-6">
         <div className="flex flex-col items-start gap-6 md:flex-row">
           <Image
@@ -321,6 +321,10 @@ export default function PetProfilePage() {
                     <Edit className="mr-2 h-4 w-4" /> Editar Perfil
                 </Button>
                 
+                 <Button variant="outline" onClick={() => exportPetProfileAsPdf(pet)}>
+                  <Download className="mr-2 h-4 w-4" /> Exportar PDF
+                </Button>
+
                    <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon">
@@ -614,10 +618,10 @@ export default function PetProfilePage() {
         </Tabs>
         
         <DialogContent>
-            {activeDialog === 'vaccine' && pet && <AddVaccineForm petId={id} allPets={[pet]} onSuccess={handleUpdateSuccess} />}
-            {activeDialog === 'exam' && pet && <AddExamForm petId={id} allPets={[pet]} onSuccess={handleUpdateSuccess} />}
-            {activeDialog === 'medication' && pet && <AddMedicationForm petId={id} allPets={[pet]} onSuccess={handleUpdateSuccess} />}
-            {activeDialog === 'consultation' && pet && <AddConsultationForm petId={id} allPets={[pet]} locations={locations} onSuccess={handleUpdateSuccess} />}
+            {activeDialog === 'vaccine' && pet && <AddVaccineForm petId={petId} allPets={[pet]} onSuccess={handleUpdateSuccess} />}
+            {activeDialog === 'exam' && pet && <AddExamForm petId={petId} allPets={[pet]} onSuccess={handleUpdateSuccess} />}
+            {activeDialog === 'medication' && pet && <AddMedicationForm petId={petId} allPets={[pet]} onSuccess={handleUpdateSuccess} />}
+            {activeDialog === 'consultation' && pet && <AddConsultationForm petId={petId} allPets={[pet]} locations={locations} onSuccess={handleUpdateSuccess} />}
             {activeDialog === 'edit-pet' && selectedItem && <EditPetForm pet={selectedItem} onSuccess={handleUpdateSuccess} />}
             {activeDialog === 'edit-exam' && selectedItem && pet && <EditExamForm pet={pet} exam={selectedItem} onSuccess={handleUpdateSuccess} />}
             {activeDialog === 'edit-vaccine' && selectedItem && pet && <EditVaccineForm pet={pet} vaccine={selectedItem} onSuccess={handleUpdateSuccess} />}
