@@ -4,14 +4,14 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { Button } from '../ui/button';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '../ui/form';
-import { Input } from '../ui/input';
-import { DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '../ui/dialog';
-import { Pet, Vaccination } from '../../lib/placeholder-data';
+import { Button } from '@/components/ui/button';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
+import { Pet, Vaccination } from '@/lib/placeholder-data';
 import { useState } from 'react';
-import { useToast } from '../../hooks/use-toast';
-import { db, auth } from '../../lib/firebase';
+import { useToast } from '@/hooks/use-toast';
+import { db, auth } from '@/lib/firebase';
 import { doc, getDoc, updateDoc, collection, addDoc, serverTimestamp, writeBatch } from 'firebase/firestore';
 
 const vaccineFormSchema = z.object({
@@ -71,7 +71,7 @@ export function EditVaccineForm({ pet, vaccine, onSuccess }: EditVaccineFormProp
             vetName: values.vetName,
             crmv: values.crmv,
             date: values.date,
-            nextApplicationDate: values.nextApplicationDate || null,
+            nextApplicationDate: values.nextApplicationDate || undefined,
             cost: values.cost || 0,
         };
 
