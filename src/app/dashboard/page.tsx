@@ -54,7 +54,7 @@ export default function DashboardPage() {
     }
     setLoading(true);
     const petsCollection = collection(db, "pets");
-    const q = query(petsCollection, where("ownerUid", "==", user.uid));
+    const q = query(petsCollection, where("ownerUids", "array-contains", user.uid));
     
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const petsList = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Pet));

@@ -1,4 +1,3 @@
-
 'use client'
 
 import { useState, useEffect } from 'react';
@@ -10,7 +9,7 @@ import { PlusCircle, DollarSign, MoreHorizontal, Edit, Trash2, Loader2 } from "l
 import { db, auth } from '@/lib/firebase';
 import { collection, onSnapshot, query, where, doc, deleteDoc } from 'firebase/firestore';
 import { onAuthStateChanged, User } from 'firebase/auth';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { AddExpenseForm } from '@/components/pets/add-expense-form';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -231,5 +230,3 @@ export default function ExpensesPage() {
     </Dialog>
   );
 }
-
-    

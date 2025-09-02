@@ -1,4 +1,3 @@
-
 'use client'
 
 import { useState, useEffect } from 'react';
@@ -9,7 +8,7 @@ import { PlusCircle, MapPin, Scissors, Stethoscope, Trees, ShoppingCart, MoreVer
 import { db, auth } from '@/lib/firebase';
 import { collection, onSnapshot, query, where, doc, deleteDoc } from 'firebase/firestore';
 import { onAuthStateChanged, User } from 'firebase/auth';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { AddLocationForm } from '@/components/pets/add-location-form';
 import { EditLocationForm } from '@/components/pets/edit-location-form';
 import { useToast } from '@/hooks/use-toast';
@@ -189,5 +188,3 @@ export default function LocationsPage() {
     </Dialog>
   );
 }
-
-    
